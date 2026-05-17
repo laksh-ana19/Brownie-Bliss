@@ -701,6 +701,9 @@ function updateBirthdayCake(flavor) {
 
     // Update image
     const cakeImg = document.getElementById('birthdayCakeImg');
+    if (cakeImg && bdayCakes[flavor]) {
+        cakeImg.src = bdayCakes[flavor].img;
+    }
 
     if (cakeImg) {
         cakeImg.src = bdayCakes[flavor].img;

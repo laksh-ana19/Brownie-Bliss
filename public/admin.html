@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Panel — Brownie Bliss</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="stylesheet" href="style.css">
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -421,23 +422,46 @@
     async function confirmPayment(orderId) {
       if (!confirm(`Confirm payment received for order ${orderId}?`)) return;
 
+      const order = allOrders.find(o => o.order_id === orderId);
+      let email = order?.email || '';
+      if (!email) {
+        const entered = prompt('Customer email for receipt (optional — leave blank to skip email):', '');
+        if (entered === null) return;
+        email = entered.trim();
+      }
+
       try {
         const res = await authFetch(`${API}/orders/${orderId}/confirm-payment`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ notes: 'Payment confirmed via WhatsApp' })
+          body: JSON.stringify({
+            notes: 'Payment confirmed via WhatsApp',
+            ...(email ? { email } : {})
+          })
         });
         const data = await res.json();
         if (data.success) {
-          showToast('✅ Payment confirmed!');
+          const mail = data.receipt_email;
+          if (mail?.sent) {
+            showToast(`✅ Payment confirmed! Receipt emailed to ${mail.to}.`);
+          } else if (mail?.skipped && mail.reason === 'smtp_not_configured') {
+            showToast('✅ Payment confirmed. (SMTP not configured — receipt email not sent.)');
+          } else if (mail?.skipped && (mail.reason === 'no_email' || mail.reason === 'invalid_email')) {
+            showToast('✅ Payment confirmed. (No valid customer email — receipt not sent.)');
+          } else if (mail?.error) {
+            showToast(`✅ Payment confirmed. Receipt email failed: ${mail.error}`);
+          } else {
+            showToast('✅ Payment confirmed!');
+          }
           loadStats();
           loadOrders();
-          // Ask to view receipt
           setTimeout(() => {
-            if (confirm('Payment confirmed! 🎉\nGenerate receipt for customer?')) {
+            if (confirm('Payment confirmed! 🎉\nView printable receipt?')) {
               viewReceipt(orderId);
             }
           }, 500);
+        } else {
+          showToast(data.message || 'Could not confirm payment');
         }
       } catch (e) {
         showToast('Error confirming payment');
@@ -492,6 +516,7 @@
       document.getElementById('detailBody').innerHTML = `
     <div class="info-grid">
       <div class="info-item"><label>Customer Name</label><span>${order.customer_name}</span></div>
+      <div class="info-item"><label>Email</label><span>${order.email || '—'}</span></div>
       <div class="info-item"><label>Phone</label><span>+91 ${order.phone}</span></div>
       <div class="info-item" style="grid-column:span 2"><label>Delivery Address</label><span>${order.address}, ${order.city} - ${order.pincode}</span></div>
       <div class="info-item"><label>Payment</label><span class="status-pill ${order.payment_status === 'paid' ? 'pay-paid' : 'pay-unpaid'}" style="font-size:12px">${order.payment_status === 'paid' ? '✅ Paid' : '⏳ Unpaid'}</span></div>

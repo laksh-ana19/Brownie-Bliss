@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Favourites - Brownie Bliss</title>
+  <link rel="icon" type="image/png" href="assets/favicon.png">
   <link
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Garamond:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap"
     rel="stylesheet">
@@ -24,6 +25,8 @@
 
   <header>
     <div class="header-inner">
+      <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+
       <a href="index.html" class="logo">
         <span class="logo-name">Brownie Bliss</span>
         <span class="logo-sub">Homemade Treats</span>
@@ -48,7 +51,14 @@
       </div>
     </div>
   </header>
-
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#home">Home</a>
+  <a href="index.html#products">Products</a>
+  <a href="index.html#birthday">Birthday Cakes</a>
+  <a href="favourites.html">Favourites</a>
+  <a href="index.html#contact">Contact</a>
+  <a href="track.html">Track Order</a>
+</div>
   <main class="favourites-page">
     <section class="favourites-hero">
       <div class="products-inner">
